@@ -1,0 +1,104 @@
+// CALL ME DADDY
+#include<bits/stdc++.h>
+#define fast ios_base::sync_with_stdio(false);cin.tie(NULL)
+#define ll long long int
+#define rep(i,n) for(ll i=0;i<n;i++)
+#define all(x) (x).begin(), (x).end()
+#define pb push_back
+#define  mod 1000000007
+#define vll vector<ll>
+#define scanit(vvv,nnn) for(ll i=0; i<nnn; i++) cin>>vvv[i];
+#define ff first
+#define ss second
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace std;
+using namespace __gnu_pbds;
+template <class T> using ordered_set = tree<T, null_type, less<T>,rb_tree_tag, tree_order_statistics_node_update>;
+ 
+ class SGTree {
+     vector<pair<ll,ll>> seg;
+ public:
+     SGTree(ll n) {
+         seg.resize(4 * n + 1);
+     }
+    pair<ll,ll> action(pair<ll,ll> a,pair<ll,ll> b){
+        if(a.ff==b.ff){
+            return {a.ff,a.ss+b.ss};
+        }
+        else if(a.ff<b.ff){
+            return a;
+        }
+        else{
+            return b;
+        }
+    }
+     void build(ll ind, ll low, ll high, ll arr[]) {
+         if (low == high) {
+             seg[ind] = {arr[low],1};
+             return;
+         }
+ 
+         ll mid = (low + high) / 2;
+         build(2 * ind + 1, low, mid, arr);
+         build(2 * ind + 2, mid + 1, high, arr);
+         seg[ind] = action(seg[2 * ind + 1], seg[2 * ind + 2]);
+     }
+ 
+     pair<ll,ll> query(ll ind, ll low, ll high, ll l, ll r) {
+         // no overlap
+         // l r low high or low high l r
+         if (r < low || high < l) return {LLONG_MAX,1};
+ 
+         // complete overlap
+         // [l low high r]
+         if (low >= l && high <= r) return seg[ind];
+ 
+         ll mid = (low + high) >> 1;
+         auto left = query(2 * ind + 1, low, mid, l, r);
+         auto right = query(2 * ind + 2, mid + 1, high, l, r);
+         return action(left, right);
+     }
+     void update(ll ind, ll low, ll high, ll i, ll val) {
+         if (low == high) {
+             seg[ind] = {val,1};
+             return;
+         }
+ 
+         ll mid = (low + high) >> 1;
+         if (i <= mid) update(2 * ind + 1, low, mid, i, val);
+         else update(2 * ind + 2, mid + 1, high, i, val);
+         seg[ind] = action(seg[2 * ind + 1], seg[2 * ind + 2]);
+     }
+ };
+ void solve(){
+             ll n,m;cin>>n>>m;
+             ll arr[n];rep(i,n){cin>>arr[i];}
+             SGTree sg(n);
+             sg.build(0,0,n-1,arr);
+             while(m--){
+                 ll a,b,c;cin>>a>>b>>c;
+                 if(a==1){
+                     sg.update(0,0,n-1,b,c);
+                 }
+                 else{
+                     auto val = sg.query(0,0,n-1,b,c-1);
+                     cout<<val.ff<<" "<<val.ss<<endl;
+                 }
+             }
+    }
+
+int main(){
+    fast;
+    #ifndef ONLINE_JUDGE
+    freopen("in.txt", "r", stdin);
+    freopen("out.txt", "w", stdout);
+    freopen("err.txt", "w", stderr);
+#endif
+    ll testcase = 1;
+    // cin >> testcase;
+    while (testcase--){
+        solve();
+    }
+    return 0;
+}
